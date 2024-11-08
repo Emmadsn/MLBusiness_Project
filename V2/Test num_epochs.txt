@@ -1,0 +1,9 @@
+          
+learning_rate = 1e-5     
+batch_size = 15 
+
+Epoch 1/5 - Test Loss: 1.1832
+Epoch 2/5 - Test Loss: 0.9981
+Epoch 3/5 - Test Loss: 0.9611
+Epoch 4/5 - Test Loss: 0.8525
+Epoch 5/5 - Test Loss: 0.8606

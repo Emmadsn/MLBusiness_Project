@@ -1,0 +1,118 @@
+ 
+                       Business Use Case: Sentiment Analysis of Google Comments for Disneyland Paris Using BERT
+
+Students’ names: Marie-ange Ayangma and Emmanuelle Desablin
+
+________________________________________
+1. Business Use Case (BUC)
+Context:
+The goal of this project is to enhance customer sentiment analysis for Disneyland Paris by fine-tuning a pre-trained BERT (Bidirectional Encoder Representations from Transformers) model on Google comments specific to Disneyland Paris. The model is referred to as "pre-trained" because it has been trained on general-purpose data. As a result, it may not fully capture the nuances of user-generated comments in this specific context, such as varying languages, tones, and sarcasm.
+
+Stakeholders:
+●Disneyland Paris Client Experience team including Business Analysts and Data Scientists
+●Various Operations teams (show, hotels, F&B etc.)
+
+Benefits and takeaways of the Machine Learning modelling:
+●Exploration of new relevant data sources on clients satisfaction.
+●Provide an automatized tool to analyse the new data and since provide time saving in data analysis 
+
+Constraints and Challenges:
+●The dataset consists of Google comments from a limited time period (April 1st to April 15th, 2024). 
+●The diversity of tones, and potential use of sarcasm introduces complexity to the analysis. 
+●Automatic translation of the comments via Google Translate may result in the loss of nuances such as tone or sarcasm, further complicating the interpretation of sentiment.
+________________________________________
+2. Dataset
+●The dataset consists of Google comments related to Disneyland Paris, collected between April 1st and April 15th, 2024. 
+●These comments reflect real customer feedback about their experiences at the park.
+●The dataset includes both comments originally in English and translations of comments from various other languages, performed automatically using Google Translate. However, this translation process may obscure important nuances, such as tone or sarcasm, which could affect sentiment interpretation.
+
+To ensure high-quality input for the model, the following preprocessing steps were applied:
+●The dataset was filtered to include only English-language comments.
+●Each comment was split into sentences for easier processing.
+●Manual annotation was performed to assign one of four sentiment labels to each comment: 'positif,' 'négatif,' 'neutre,' or 'mitigé.'
+________________________________________
+3. Machine Learning Model and Workflow
+A) Exploratory Data Analysis (EDA)
+The eda.ipynb file contains the following key analyses:
+●	Data Overview: Provided an initial look at the data, including distribution of rating and sentiment labels ('positif,' 'négatif,' 'neutre,' or 'mitigé.') in the dataset. 
+●	Data Cleaning and preprocessing: Displayed steps for cleaning the data and structuring the data for training.
+○	Remove of empty rows (no comments) and duplicates 
+○	Transform the data type for specific columns 
+○	Reorder of column (from the most recent to the oldest)
+
+●Sentiment Distribution: 
+	○	Visualisation of the distribution of sentiments ('positif,' 'négatif,' 'neutre,' or 'mitigé.') in the dataset 
+	○	Visualisation of the length of comments
+
+●Tokenization in BERT involves breaking down a sentence or text into tokens that BERT can use as input. BERT uses a specific tokenizer called WordPiece tokenization, which is based on the idea of breaking words into smaller subword units, especially for out-of-vocabulary (OOV) words. WordPiece is particularly useful because it can handle rare or unseen words by breaking them into known subword units (e.g., prefixes or suffixes).
+
+●Max Length of tokens: we decide to keep cut comments at the length of 100 tokens because according to our analysis of the dataset, the average sequence length is 42 tokens, with a median of 24 tokens. These statistics indicate that the majority of the texts in our corpus are relatively short and that the most relevant information is captured within the first few dozen tokens.  In addition, we make the assumption that the beginning of the comment is sufficient to grasp the sentiment of the whole comment, being common to introduce one’s feeling at the outset. In addition, this decision is also B) Training the Model
+
+The script.ipynb file contains the following key analyses:
+●Model: BERT, a pre-trained Natural Language Processing (NLP) model, is fine-tuned using the dataset.
+●Metrics: During training, the two key indicator monitored:
+	○Train Loss: Evaluates how far the model's predictions deviate from the true sentiment labels, with the goal of minimizing this loss.
+	Calculation methodology:
+Each time the model makes a prediction, it compares its prediction with the true label. The difference between the prediction and the correct label is called the ‘loss’.
+If the model’s prediction is far from the correct label, the loss will be large. If the prediction is close, the loss will be small. During training, the model continually adjusts its internal parameters to minimize this loss. The goal is to reduce the train loss as much as possible.
+>>Example:
+If the model predicts a comment is ‘negative’ when it’s actually ‘positive,’ the loss will be high. If it predicts ‘positive’ but with some uncertainty (e.g., a score slightly below 100%), the loss will be smaller.
+
+●Class-wise error rate: a performance metric that shows how well the model performs for each individual class. It helps identify which classes the model is struggling with. Lower class-wise error rates indicate that the model is performing well for that particular sentiment class.Higher error rates could point to issues with class imbalance, model bias, or complexity in that specific sentiment category (e.g., "neutre" may be harder to classify).
+Calculation Methodology: Error Rate (Class i)=Number of incorrect predictions for Class i / Total number of samples in Class i  Where:
+	○	"Class i" refers to one of the sentiment labels, e.g., 'positif,' 'négatif,' 'neutre,' or 'mitigé.'
+	○	The numerator is the count of incorrect predictions for that class.
+	○	The denominator is the total number of samples that truly belong to that class.
+
+B) Saving the Best Parameters and manual iteration
+In the PIPELINE section, we initially used Optuna to test and display various combinations of hyperparameters, aiming to identify the best set for our model. This process involves iteratively testing combinations, with each loop yielding metrics to evaluate. However, due to computational constraints, we couldn't complete the entire optimization process. It is also important to mention it is not a recommended methodology to use for the BERT model. Therefore, we therefore decided to start from the baseline and change manually the hyper parameters:
+	○	Max Length: Fixed at 100 tokens. See the EDA section for explanation.
+	○	Batch Size Suggestion: We experimented with sizes of 10, 15, 20, and 25 to balance between memory efficiency and model convergence.
+	○	Learning Rate Suggestion: chosen from a continuous range between 1e-5 and 5e-5, on a logarithmic scale
+	○	Number of Epochs: Determined by tracking the training and validation loss curves over epochs, with candidate values set to 1, 3, and 5. We identified the optimal number of epochs is 4 based on loss curves analysis, which offer insights into the model’s learning progression and can help avoid overfitting
+
+C) Testing the Model
+●Test Data: After training, the model is tested with the best hyper parameters on a separate dataset to evaluate its ability to generalize and accurately predict sentiments on unseen data. 
+	○	We could not reach the end of the model testing given recurrent kernel crash. We picked up hyper parameters that looks relevant. We test the model with them. We can therefore compare metrics (the ones of the baseline vs. the ones of the test)
+
+●Overview of the results
+
+________________________________________
+4. Baseline Model
+
+Baseline Setup:
+●Preprocessing: Tokenization and sentence splitting using BERT’s tokenizer
+●Model: The pre-trained BERT model before fine-tuning.
+
+Metrics: 
+●Final Loss: 1.1240148629461015
+●Class-wise error rate: [positif : 1.0, négatif:1.0, neutre: 0.0, mitigé: 1.0]
+
+________________________________________
+5. Score Analysis
+
+The Score Analysis evaluates the impact of different hyperparameter combinations on model performance, comparing each setup against the baseline model. Each configuration tested variations in Max Length, Batch Size, Learning Rate, and Epoch to assess how these factors influenced metrics such as Loss and Class-wise Error Rates. The table below provides insights into which parameter configurations led to noticeable improvements:
+
+Max Length	Batch Size	Learning Rate	Epoch	Loss	Loss Difference (vs Baseline)	Error Rates [Pos, Neg, Neutre, Mitigé]	Error Rate Difference 
+(vs Baseline)
+350		15		1e-5		1	/	-				/						-
+100		15		1e-5		1	1.13	Baseline 			[1.0,  1.0, 0.0,  1.0 ]			Baseline
+100		15		1e-5		4	0.70	0.43	 			[0.33, 1.0, 0.04, 0.66]		[0.67, 0.0, -0.04, 0.34]
+100		15		2e-5		4	0.75	0.38				[0.33, 1.0, 0.07, 0.57]		[0.67, 0.0, -0.07, 0.43]
+100		10		1e-5		4	0,82	0.31	 			[0.44, 1.0, 0.0,  0.86]		[0.56, 0.0,  0.0,  0.14]
+100		20		1e-5		4	0.65	0.48				[0.33, 1.0, 0.05, 0.59] 	[0.67, 0.0, -0.05, 0.41]
+100		25		1e-5		4	0.56	0.57		 		[0.33, 1.0, 0.07, 0.31]		[0.67, 0.0, -0.07, 0.69]
+
+Interpretation of Results:
+●Loss Improvements: The best improvements in model loss were observed with a learning rate of 1e-5 across different batch sizes. Specifically, using a batch size of 25 and a learning rate of 1e-5 yielded the lowest loss of 0.56, representing a 0.57 reduction from the baseline. This suggests that a smaller learning rate with a larger batch size helps the model converge effectively, enhancing generalization and stability during training.
+
+●Class-wise Error Rates: Significant improvements in the class-wise error rates were seen in the positive and mitigated categories, particularly with configurations using 4 epochs. For example, the error rate for positive sentiment decreased from 1.0 to 0.33, while mitigated saw a drop from 1.0 to as low as 0.31.
+
+●Challenges with Negative Class: Despite optimizations, the error rate for the negative class remained high at 1.0 in all configurations. This persistent issue may indicate that the model struggles with this sentiment class, possibly due to data imbalance or nuances unique to negative comments.
+
+●Optimal Configuration: The configuration with Max Length = 100, Batch Size = 25, Learning Rate = 1e-5, and Epoch = 4 yielded the best balance, minimizing both loss and error rates across sentiment classes.
+
+Future Consideration
+For the model to reach optimal performance, it will likely require a larger dataset with more balanced class distributions. Increasing the volume of data, especially for underrepresented classes, could help the model learn more nuanced distinctions and improve accuracy across all sentiment categories.
+
+
